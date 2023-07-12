@@ -2,7 +2,6 @@ package stat.client.client;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Mono;
 import ru.dto.dtos.EndpointHit;
 import ru.dto.dtos.ViewStats;
@@ -19,7 +18,7 @@ public class HitService {
 
     private final StatsClient webClient = new StatsClient();
 
-    public ResponseEntity<EndpointHit> saveHit(@RequestBody EndpointHit endpointHit) {
+    public ResponseEntity<EndpointHit> saveHit(EndpointHit endpointHit) {
         return webClient
                 .webClientWithTimeout()
                 .post()
