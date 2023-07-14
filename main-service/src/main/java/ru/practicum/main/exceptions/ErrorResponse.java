@@ -1,4 +1,4 @@
-package stat.service.exceptions;
+package ru.practicum.main.exceptions;
 
 import lombok.*;
 

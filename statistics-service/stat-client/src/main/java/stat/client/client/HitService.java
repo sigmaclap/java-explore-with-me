@@ -6,6 +6,8 @@ import reactor.core.publisher.Mono;
 import ru.dto.dtos.EndpointHit;
 import ru.dto.dtos.ViewStats;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -38,13 +40,18 @@ public class HitService {
                 .webClientWithTimeout()
                 .get()
                 .uri(builder -> builder.path("/stats")
-                        .queryParam("start", start.format(formatter))
-                        .queryParam("end", end.format(formatter))
+                        .queryParam("start", encodeTime(start))
+                        .queryParam("end", encodeTime(end))
                         .queryParam("uris", uris)
                         .queryParam("unique", unique)
                         .build())
                 .retrieve()
                 .toEntityList(ViewStats.class)
                 .block();
+    }
+
+    private static String encodeTime(LocalDateTime value) {
+        String timeWithFormat = value.format(formatter);
+        return URLEncoder.encode(timeWithFormat, StandardCharsets.UTF_8);
     }
 }

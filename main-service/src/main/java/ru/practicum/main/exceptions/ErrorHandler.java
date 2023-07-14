@@ -1,4 +1,4 @@
-package stat.service.exceptions;
+package ru.practicum.main.exceptions;
 
 import lombok.Generated;
 import org.postgresql.util.PSQLException;
@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 public class ErrorHandler {
     private static final String ERROR_REASON_BAD_REQUEST = "Incorrectly made request.";
     private static final String ERROR_REASON_CONFLICT = "Integrity constraint has been violated.";
+    private static final String ERROR_REASON_NOT_FOUND = "The required object was not found.";
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @ExceptionHandler({ConstraintViolationException.class, InvalidValidationException.class})
@@ -34,8 +35,18 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleFilmAlreadyExistException(final RuntimeException e) {
         return new ErrorResponse(
-                HttpStatus.BAD_REQUEST.name(),
+                HttpStatus.CONFLICT.name(),
                 ERROR_REASON_CONFLICT,
+                e.getMessage(),
+                LocalDateTime.now().format(DATE_FORMAT));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleFilmNotFoundException(final RuntimeException e) {
+        return new ErrorResponse(
+                HttpStatus.NOT_FOUND.name(),
+                ERROR_REASON_NOT_FOUND,
                 e.getMessage(),
                 LocalDateTime.now().format(DATE_FORMAT));
     }
