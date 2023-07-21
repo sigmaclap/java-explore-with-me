@@ -4,7 +4,7 @@ services:
     build: ./statistics-service/stat-service
     container_name: statistic-service
     ports:
-      - "9092:9090"
+      - "9090:9090"
     depends_on:
       - stats-db
     environment:
