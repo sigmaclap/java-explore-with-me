@@ -11,9 +11,9 @@ public interface CompilationService {
 
     void deleteCompilation(Long compId);
 
-    CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request);
+    CompilationDto updateCompilationPatch(Long compId, UpdateCompilationRequest request);
 
-    List<CompilationDto> getCompilationOfEvents(Boolean pinned, Integer from, Integer size);
+    List<CompilationDto> getCompilationOfEvents(boolean pinned, Integer from, Integer size);
 
     CompilationDto getCompilationById(Long compId);
 }

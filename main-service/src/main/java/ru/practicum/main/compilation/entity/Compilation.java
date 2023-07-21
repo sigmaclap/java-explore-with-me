@@ -16,6 +16,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Compilation {
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "compilations_events",
+            joinColumns = @JoinColumn(name = "compilation_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_id"))
     private List<Event> events;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

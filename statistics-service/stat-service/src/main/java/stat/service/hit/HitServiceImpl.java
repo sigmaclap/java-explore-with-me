@@ -19,6 +19,7 @@ public class HitServiceImpl implements HitService {
 
     @Override
     public void saveHit(EndpointHit endpointHit) {
+        log.info("Saving hit " + endpointHit);
         repository.save(mapper.toHit(endpointHit));
     }
 

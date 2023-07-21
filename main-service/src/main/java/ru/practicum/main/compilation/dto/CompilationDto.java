@@ -4,11 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.main.event.entity.Event;
+import ru.practicum.main.event.dto.EventShortDto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import java.util.List;
 
 @Data
@@ -16,9 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CompilationDto {
-    private List<Event> events;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private List<EventShortDto> events;
     private Long id;
     private Boolean pinned;
     private String title;

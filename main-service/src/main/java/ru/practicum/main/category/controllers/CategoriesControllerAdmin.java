@@ -1,4 +1,4 @@
-package ru.practicum.main.controllers.admin;
+package ru.practicum.main.category.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,24 +15,27 @@ import javax.validation.Valid;
 @RequestMapping("/admin/categories")
 @Slf4j
 @Validated
-public class CategoriesController {
+public class CategoriesControllerAdmin {
     private final CategoryService categoryService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto createCategory(@Valid @RequestBody CategoryDto categoryDto) {
+        log.info("Creating category with body {}", categoryDto);
         return categoryService.createCategory(categoryDto);
     }
 
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable Long catId) {
+        log.info("Deleting category with id {}", catId);
         categoryService.deleteCategory(catId);
     }
 
     @PatchMapping("/{catId}")
     public CategoryDto updateCategory(@PathVariable Long catId,
                                       @Valid @RequestBody CategoryDto categoryDto) {
+        log.info("Updating category with id {} and body {}", catId, categoryDto);
         return categoryService.updateCategory(catId, categoryDto);
     }
 }

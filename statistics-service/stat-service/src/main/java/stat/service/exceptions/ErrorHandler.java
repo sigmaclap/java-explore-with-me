@@ -4,13 +4,14 @@ import lombok.Generated;
 import org.postgresql.util.PSQLException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.dto.dtos.utils.Constants;
 
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 
 @RestControllerAdvice
@@ -18,7 +19,6 @@ import java.time.format.DateTimeFormatter;
 public class ErrorHandler {
     private static final String ERROR_REASON_BAD_REQUEST = "Incorrectly made request.";
     private static final String ERROR_REASON_CONFLICT = "Integrity constraint has been violated.";
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @ExceptionHandler({ConstraintViolationException.class, InvalidValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -27,7 +27,7 @@ public class ErrorHandler {
                 HttpStatus.BAD_REQUEST.name(),
                 ERROR_REASON_BAD_REQUEST,
                 e.getMessage(),
-                LocalDateTime.now().format(DATE_FORMAT));
+                LocalDateTime.now().format(Constants.formatter));
     }
 
     @ExceptionHandler(PSQLException.class)
@@ -37,14 +37,28 @@ public class ErrorHandler {
                 HttpStatus.BAD_REQUEST.name(),
                 ERROR_REASON_CONFLICT,
                 e.getMessage(),
-                LocalDateTime.now().format(DATE_FORMAT));
+                LocalDateTime.now().format(Constants.formatter));
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodValidException(final MethodArgumentNotValidException e) {
         return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.name())
+                .reason(ERROR_REASON_BAD_REQUEST)
                 .message("Error validation Data")
+                .timestamp(LocalDateTime.now().format(Constants.formatter))
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMethodValidException(final MissingServletRequestParameterException e) {
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.name())
+                .reason(ERROR_REASON_BAD_REQUEST)
+                .message("Error validation Data")
+                .timestamp(LocalDateTime.now().format(Constants.formatter))
                 .build();
     }
 

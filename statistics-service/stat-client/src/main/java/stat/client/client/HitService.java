@@ -1,33 +1,38 @@
 package stat.client.client;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.dto.dtos.EndpointHit;
 import ru.dto.dtos.ViewStats;
+import ru.dto.dtos.utils.Constants;
+import stat.client.client.mapper.ClientMapper;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Month;
+import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
+@RequiredArgsConstructor
 public class HitService {
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
-    private final StatsClient webClient = new StatsClient();
 
-    public ResponseEntity<EndpointHit> saveHit(EndpointHit endpointHit) {
-        return webClient
+    private final StatsClient webClient;
+    private final ClientMapper mapper;
+
+    public void saveHit(HttpServletRequest request) {
+        EndpointHit hit = mapper.toHit(request);
+        webClient
                 .webClientWithTimeout()
                 .post()
                 .uri("/hit")
-                .body(Mono.just(endpointHit), EndpointHit.class)
+                .body(Mono.just(hit), EndpointHit.class)
                 .retrieve()
-                .toEntity(EndpointHit.class)
+                .bodyToMono(EndpointHit.class)
                 .block();
     }
 
@@ -40,8 +45,8 @@ public class HitService {
                 .webClientWithTimeout()
                 .get()
                 .uri(builder -> builder.path("/stats")
-                        .queryParam("start", encodeTime(start))
-                        .queryParam("end", encodeTime(end))
+                        .queryParam("start", (start).format(Constants.formatter))
+                        .queryParam("end", (end).format(Constants.formatter))
                         .queryParam("uris", uris)
                         .queryParam("unique", unique)
                         .build())
@@ -50,8 +55,22 @@ public class HitService {
                 .block();
     }
 
-    private static String encodeTime(LocalDateTime value) {
-        String timeWithFormat = value.format(formatter);
-        return URLEncoder.encode(timeWithFormat, StandardCharsets.UTF_8);
+    public Long getViews(List<Long> eventsIds) {
+        List<String> uris = new ArrayList<>();
+        Long currentViews = 0L;
+        for (Long eventId : eventsIds) {
+            uris.add("/events/" + eventId);
+        }
+        LocalDateTime start = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(3000, Month.JANUARY, 1, 0, 0);
+        List<ViewStats> stats = getStats(start, end, uris, true).getBody();
+        if (stats != null) {
+            for (ViewStats stat : stats) {
+                currentViews += stat.getHits();
+            }
+        } else {
+            return currentViews;
+        }
+        return currentViews;
     }
 }
