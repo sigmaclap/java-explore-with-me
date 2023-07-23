@@ -1,6 +1,10 @@
 package stat.service.exceptions;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import ru.dto.dtos.utils.Constants;
+
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -12,5 +16,6 @@ public class ErrorResponse {
     private String status;
     private String reason;
     private String message;
-    private String timestamp;
+    @JsonFormat(pattern = Constants.DATE_FORMAT)
+    private LocalDateTime timestamp;
 }

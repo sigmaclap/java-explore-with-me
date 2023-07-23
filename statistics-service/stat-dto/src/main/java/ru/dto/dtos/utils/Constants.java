@@ -1,11 +1,11 @@
 package ru.dto.dtos.utils;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+
+import lombok.experimental.UtilityClass;
 
 import java.time.format.DateTimeFormatter;
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public class Constants {
 
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";

@@ -1,13 +1,13 @@
 package stat.client.client.mapper;
 
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 import ru.dto.dtos.EndpointHit;
 import ru.dto.dtos.utils.Constants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 
-@Component
+@UtilityClass
 public class ClientMapper {
 
     public EndpointHit toHit(HttpServletRequest request) {

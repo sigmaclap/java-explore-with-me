@@ -1,11 +1,11 @@
 package ru.practicum.main.user.mapper;
 
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 import ru.practicum.main.user.dto.UserDto;
 import ru.practicum.main.user.dto.UserShortDto;
 import ru.practicum.main.user.entity.User;
 
-@Component
+@UtilityClass
 public class UserMapper {
     public User toUser(UserDto userDto) {
         return User.builder()

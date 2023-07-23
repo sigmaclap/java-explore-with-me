@@ -5,6 +5,6 @@ create table if not exists hit (
     app varchar(255) not null,
     uri varchar(255) not null,
     ip varchar(255) not null,
-    timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    timestamp timestamp without time zone not null,
     constraint pk_hit primary key (id)
 );

@@ -1,20 +1,20 @@
 package stat.service.hit.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 
 @Entity
 @Table(name = "hit")
-@Data
+@Getter
+@Setter
+@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class Hit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,4 +23,17 @@ public class Hit {
     private String uri;
     private String ip;
     private LocalDateTime timestamp;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Hit hit = (Hit) o;
+        return Objects.equals(id, hit.id) && Objects.equals(app, hit.app) && Objects.equals(uri, hit.uri) && Objects.equals(ip, hit.ip) && Objects.equals(timestamp, hit.timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, app, uri, ip, timestamp);
+    }
 }

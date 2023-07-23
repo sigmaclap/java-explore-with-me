@@ -29,13 +29,13 @@ public class RequestServiceImpl implements RequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final RequestRepository repository;
-    private final RequestMapper mapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getParticipationInEventsByUserId(Long userId) {
         validateExistsUser(userId);
         return repository.findAllByRequester_Id(userId).stream()
-                .map(mapper::toDtoRequest)
+                .map(RequestMapper::toDtoRequest)
                 .collect(Collectors.toList());
     }
 
@@ -43,26 +43,22 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public ParticipationRequestDto createRequestByUserOnParticipation(Long userId, Long eventId) {
         Request request = new Request();
-        validateExistsUser(userId);
-        validateExistsEvent(eventId);
-        User userRequester = userRepository.getReferenceById(userId);
-        Event event = eventRepository.getReferenceById(eventId);
+        User userRequester = validateExistsUser(userId);
+        Event event = validateExistsEvent(eventId);
         List<Request> confirmedRequests = repository.findConfirmedRequest(RequestStatus.CONFIRMED, eventId);
         validateCreateByUserRequest(userId, eventId, userRequester, event, confirmedRequests);
         updateRequestData(request, userRequester, event);
-        return mapper.toDtoRequest(repository.save(request));
+        return RequestMapper.toDtoRequest(repository.save(request));
     }
 
     @Override
     @Transactional
     public ParticipationRequestDto cancelRequestByUser(Long userId, Long requestId) {
-        validateExistsUser(userId);
-        validateExistsRequest(requestId);
-        User userRequester = userRepository.getReferenceById(userId);
-        Request request = repository.getReferenceById(requestId);
+        User userRequester = validateExistsUser(userId);
+        Request request = validateExistsRequest(requestId);
         validateUserOwnerRequest(userRequester, request.getRequester());
         request.setStatus(RequestStatus.CANCELED);
-        return mapper.toDtoRequest(repository.save(request));
+        return RequestMapper.toDtoRequest(repository.save(request));
     }
 
     private static void validateUserOwnerRequest(User userOwnerRequest, User userRequester) {
@@ -72,29 +68,23 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    private void validateExistsUser(Long userId) {
-        if (userRepository.findById(userId).isEmpty()) {
-            log.error("User with id not found: " + userId);
-            throw new UserNotFoundException("User with id not found: " + userId);
-        }
+    private User validateExistsUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with id not found: " + userId));
     }
 
-    private void validateExistsEvent(Long eventId) {
-        if (eventRepository.findById(eventId).isEmpty()) {
-            log.error("Event with id not found: " + eventId);
-            throw new EventNotFoundException("Event with id was not found: " + eventId);
-        }
+    private Event validateExistsEvent(Long eventId) {
+        return eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("Event with id was not found: " + eventId));
     }
 
-    private void validateExistsRequest(Long requestId) {
-        if (repository.findById(requestId).isEmpty()) {
-            log.error("Request with id not found: " + requestId);
-            throw new RequestNotFoundException("Request with id not found: " + requestId);
-        }
+    private Request validateExistsRequest(Long requestId) {
+        return repository.findById(requestId)
+                .orElseThrow(() -> new RequestNotFoundException("Request with id not found: " + requestId));
     }
 
     private static void updateRequestData(Request request, User userRequester, Event event) {
-        if (event.getRequestModeration().equals(Boolean.FALSE) || event.getParticipantLimit() == 0) {
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             request.setStatus(RequestStatus.CONFIRMED);
         } else {
             request.setStatus(RequestStatus.PENDING);

@@ -1,10 +1,10 @@
 package ru.practicum.main.request.mapper;
 
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 import ru.practicum.main.request.dto.ParticipationRequestDto;
 import ru.practicum.main.request.entity.Request;
 
-@Component
+@UtilityClass
 public class RequestMapper {
     public ParticipationRequestDto toDtoRequest(Request request) {
         return ParticipationRequestDto.builder()

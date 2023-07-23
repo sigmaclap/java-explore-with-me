@@ -1,6 +1,7 @@
 package ru.practicum.main.compilation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.main.compilation.dto.CompilationDto;
@@ -12,25 +13,25 @@ import ru.practicum.main.event.EventRepository;
 import ru.practicum.main.event.entity.Event;
 import ru.practicum.main.exceptions.CompilationNotFoundException;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.main.utils.CommonPatterns.patternPageable;
+import static ru.practicum.main.utils.Pagination.patternPageable;
+
 
 @Service
 @RequiredArgsConstructor
 public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository repository;
-    private final CompilationMapper mapper;
     private final EventRepository eventRepository;
 
     @Override
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto compilationDto) {
-        Compilation compilation = mapper.toCompilation(compilationDto);
+        Compilation compilation = CompilationMapper.toCompilation(compilationDto);
         getCompilationsOfEvents(compilationDto, compilation);
-        return mapper.toDto(repository.save(compilation));
+        return CompilationMapper.toDto(repository.save(compilation));
     }
 
     @Override
@@ -46,25 +47,28 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = repository.findById(compId)
                 .orElseThrow(() -> new CompilationNotFoundException("Compilation not found"));
         updateCompilationEntity(request, compilation);
-        return mapper.toDto(repository.save(compilation));
+        return CompilationMapper.toDto(repository.save(compilation));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CompilationDto> getCompilationOfEvents(boolean pinned, Integer from, Integer size) {
+        Pageable pagination = patternPageable(from, size);
         if (pinned) {
-            return repository.findAllByPinnedTrue(patternPageable(from, size)).stream()
-                    .map(mapper::toDto)
+            return repository.findAllByPinnedTrue(pagination).stream()
+                    .map(CompilationMapper::toDto)
                     .collect(Collectors.toList());
         } else {
-            return repository.findAllByPinnedFalse(patternPageable(from, size)).stream()
-                    .map(mapper::toDto)
+            return repository.findAllByPinnedFalse(pagination).stream()
+                    .map(CompilationMapper::toDto)
                     .collect(Collectors.toList());
         }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CompilationDto getCompilationById(Long compId) {
-        return mapper.toDto(repository.findById(compId)
+        return CompilationMapper.toDto(repository.findById(compId)
                 .orElseThrow(() -> new CompilationNotFoundException("Compilation not found")));
     }
 
@@ -74,13 +78,10 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private List<Event> updateListEvents(List<Long> eventsIds) {
-        List<Event> eventsToCreate = new ArrayList<>();
         if (eventsIds != null) {
-            for (Long ids : eventsIds) {
-                eventsToCreate.add(eventRepository.getReferenceById(ids));
-            }
+            return eventRepository.findAllByIdIn(eventsIds);
         }
-        return eventsToCreate;
+        return Collections.emptyList();
     }
 
     private void updateCompilationEntity(UpdateCompilationRequest request, Compilation compilation) {

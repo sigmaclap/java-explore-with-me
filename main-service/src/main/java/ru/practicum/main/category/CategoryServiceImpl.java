@@ -2,6 +2,7 @@ package ru.practicum.main.category;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.main.category.dto.CategoryDto;
@@ -12,20 +13,20 @@ import ru.practicum.main.exceptions.CategoryNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.main.utils.CommonPatterns.patternPageable;
+import static ru.practicum.main.utils.Pagination.patternPageable;
+
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository repository;
-    private final CategoryMapper mapper;
 
     @Override
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
         log.info("Creating new category {}", categoryDto.getName());
-        return mapper.toDtoCategory(repository.save(mapper.toCategory(categoryDto)));
+        return CategoryMapper.toDtoCategory(repository.save(CategoryMapper.toCategory(categoryDto)));
     }
 
     @Override
@@ -42,20 +43,23 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = repository.findById(catId)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id"));
         category.setName(categoryDto.getName());
-        return mapper.toDtoCategory(repository.save(category));
+        return CategoryMapper.toDtoCategory(repository.save(category));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CategoryDto> getCategories(Integer from, Integer size) {
-        return repository.findAll(patternPageable(from, size)).stream()
-                .map(mapper::toDtoCategory)
+        Pageable pagination = patternPageable(from, size);
+        return repository.findAll(pagination).stream()
+                .map(CategoryMapper::toDtoCategory)
                 .collect(Collectors.toList());
     }
 
 
     @Override
+    @Transactional(readOnly = true)
     public CategoryDto getCategoryById(Long catId) {
-        return mapper.toDtoCategory(repository.findById(catId)
+        return CategoryMapper.toDtoCategory(repository.findById(catId)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id")));
     }
 }

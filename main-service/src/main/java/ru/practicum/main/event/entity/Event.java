@@ -9,10 +9,13 @@ import ru.practicum.main.utils.Location;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "events")
-@Data
+@Getter
+@Setter
+@ToString
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,6 +28,7 @@ public class Event {
     String title;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id", nullable = false)
+    @ToString.Exclude
     Category category;
     @Column(name = "created_on")
     LocalDateTime createdOn;
@@ -33,9 +37,11 @@ public class Event {
     LocalDateTime eventDate;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "initiator_id", nullable = false)
+    @ToString.Exclude
     User initiator;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "location_id", nullable = false)
+    @ToString.Exclude
     Location location;
     Boolean paid;
     @Column(name = "confirmed_requests")
@@ -49,4 +55,30 @@ public class Event {
     @Enumerated(EnumType.STRING)
     State state;
     Long views;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return Objects.equals(id, event.id) && Objects.equals(annotation, event.annotation)
+                && Objects.equals(title, event.title) && Objects.equals(category, event.category)
+                && Objects.equals(createdOn, event.createdOn) && Objects.equals(description, event.description)
+                && Objects.equals(eventDate, event.eventDate) && Objects.equals(initiator, event.initiator)
+                && Objects.equals(location, event.location) && Objects.equals(paid, event.paid)
+                && Objects.equals(confirmedRequests, event.confirmedRequests)
+                && Objects.equals(participantLimit, event.participantLimit)
+                && Objects.equals(publishedOn, event.publishedOn)
+                && Objects.equals(requestModeration, event.requestModeration)
+                && state == event.state && Objects.equals(views, event.views);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, annotation, title, category,
+                createdOn, description, eventDate, initiator,
+                location, paid, confirmedRequests, participantLimit,
+                publishedOn, requestModeration, state, views);
+    }
 }

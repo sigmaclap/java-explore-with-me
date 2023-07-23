@@ -11,7 +11,6 @@ import stat.client.client.mapper.ClientMapper;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,10 +21,9 @@ public class HitService {
 
 
     private final StatsClient webClient;
-    private final ClientMapper mapper;
 
     public void saveHit(HttpServletRequest request) {
-        EndpointHit hit = mapper.toHit(request);
+        EndpointHit hit = ClientMapper.toHit(request);
         webClient
                 .webClientWithTimeout()
                 .post()
@@ -55,21 +53,20 @@ public class HitService {
                 .block();
     }
 
-    public Long getViews(List<Long> eventsIds) {
-        List<String> uris = new ArrayList<>();
+    public Long getViews(LocalDateTime start, LocalDateTime end, List<Long> eventsIds) {
         Long currentViews = 0L;
+        if (eventsIds.isEmpty()) {
+            return currentViews;
+        }
+        List<String> uris = new ArrayList<>();
         for (Long eventId : eventsIds) {
             uris.add("/events/" + eventId);
         }
-        LocalDateTime start = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0);
-        LocalDateTime end = LocalDateTime.of(3000, Month.JANUARY, 1, 0, 0);
         List<ViewStats> stats = getStats(start, end, uris, true).getBody();
-        if (stats != null) {
+        if (stats != null && !stats.isEmpty()) {
             for (ViewStats stat : stats) {
                 currentViews += stat.getHits();
             }
-        } else {
-            return currentViews;
         }
         return currentViews;
     }

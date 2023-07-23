@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 
@@ -25,28 +24,23 @@ class HitServiceImplTest {
     private HitService service;
     @Mock
     private HitRepository repository;
-    @Mock
-    private HitMapper mapper;
+
     private final EasyRandom generator = new EasyRandom();
 
     @BeforeEach
     void setUp() {
-        service = new HitServiceImpl(repository, mapper);
+        service = new HitServiceImpl(repository);
     }
 
     @Test
     void saveHit_whenValidData_thenSavedHit() {
         EndpointHit endpointHit = generator.nextObject(EndpointHit.class);
         endpointHit.setTimestamp("2020-05-05 00:00:00");
-        Hit hit = generator.nextObject(Hit.class);
-
-        when(mapper.toHit(endpointHit)).thenReturn(hit);
-        when(repository.save(hit)).thenReturn(hit);
+        Hit hitTest = HitMapper.toHit(endpointHit);
 
         service.saveHit(endpointHit);
 
-        assertNotNull(hit);
-        verify(repository, times(1)).save(hit);
+        verify(repository, times(1)).save((hitTest));
     }
 
     @Test

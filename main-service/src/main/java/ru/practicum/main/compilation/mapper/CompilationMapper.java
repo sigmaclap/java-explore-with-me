@@ -1,7 +1,6 @@
 package ru.practicum.main.compilation.mapper;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 import ru.practicum.main.compilation.dto.CompilationDto;
 import ru.practicum.main.compilation.dto.NewCompilationDto;
 import ru.practicum.main.compilation.entity.Compilation;
@@ -9,10 +8,8 @@ import ru.practicum.main.event.mapper.EventMapper;
 
 import java.util.stream.Collectors;
 
-@Component
-@RequiredArgsConstructor
+@UtilityClass
 public class CompilationMapper {
-    private final EventMapper eventMapper;
 
     public Compilation toCompilation(NewCompilationDto dto) {
         return Compilation.builder()
@@ -27,7 +24,7 @@ public class CompilationMapper {
                 .title(compilation.getTitle())
                 .pinned(compilation.getPinned())
                 .events(compilation.getEvents().stream()
-                        .map(eventMapper::toShortDto)
+                        .map(EventMapper::toShortDto)
                         .collect(Collectors.toList()))
                 .build();
     }
