@@ -41,6 +41,7 @@ import static ru.practicum.main.utils.Pagination.patternPageableWithSort;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class EventServiceImpl implements EventService {
     private final EventRepository repository;
     private final UserRepository userRepository;
@@ -83,7 +84,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
     public EventFullDto patchEventByAdmin(Long eventId, UpdateEventRequest request) {
         Event event = validateExistsEvent(eventId);
         validatedTimeToStartEventByAdmin(request.getEventDate());
@@ -107,7 +107,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
     public EventFullDto createEventByUserId(Long userId, NewEventDto newEventDto) {
         validatedTimeToStartEvent(newEventDto.getEventDate());
         User initiator = validateExistsUser(userId);
@@ -129,7 +128,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
     public EventFullDto updateEventWithUserIdAndEventId(Long userId, Long eventId, UpdateEventRequest request) {
         validateExistsUser(userId);
         validatedTimeToStartEvent(request.getEventDate());
@@ -153,7 +151,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
     public EventResponseStatusUpdateResult updateEventParticipationUsers(Long userId, Long eventId,
                                                                          EventRequestStatusUpdateResult request) {
         validateExistsUser(userId);
@@ -171,7 +168,7 @@ public class EventServiceImpl implements EventService {
         }
         validateParticipantLimit(event, confirmedRequest);
         updateRequestsStatus(request, event, requests, confirmedRequest);
-        saveRequests(event, requests);
+        saveRequestsData(event, requests);
         return EventMapper.toDtoResponseStatus(requests.stream()
                 .map(RequestMapper::toDtoRequest)
                 .collect(Collectors.toList()));
@@ -297,19 +294,20 @@ public class EventServiceImpl implements EventService {
         if (startDate.isPresent()) {
             LocalDateTime start = startDate.get();
             LocalDateTime end = LocalDateTime.now();
-            resultEvents.forEach(v -> v.setViews(hitService.getViews(start, end, eventsIds)));
+            Long totalViews = hitService.getViews(start, end, eventsIds);
+            resultEvents.forEach(v -> v.setViews(totalViews));
         } else {
             resultEvents.forEach(v -> v.setViews(0L));
         }
     }
 
-    private void saveRequests(Event event, List<Request> requests) {
+    private void saveRequestsData(Event event, List<Request> requests) {
         for (Request req : requests) {
             if (req.getStatus().equals(RequestStatus.CONFIRMED)) {
                 event.setConfirmedRequests(+1L);
             }
-            requestRepository.save(req);
         }
+        repository.save(event);
     }
 
     private static void updateRequestsStatus(EventRequestStatusUpdateResult request, Event event, List<Request> requests, List<Request> confirmedRequest) {

@@ -22,12 +22,12 @@ import static ru.practicum.main.utils.Pagination.patternPageable;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository repository;
     private final EventRepository eventRepository;
 
     @Override
-    @Transactional
     public CompilationDto createCompilation(NewCompilationDto compilationDto) {
         Compilation compilation = CompilationMapper.toCompilation(compilationDto);
         getCompilationsOfEvents(compilationDto, compilation);
@@ -35,14 +35,12 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    @Transactional
     public void deleteCompilation(Long compId) {
         repository.delete(repository.findById(compId)
                 .orElseThrow(() -> new CompilationNotFoundException("Compilation not found and not deleted")));
     }
 
     @Override
-    @Transactional
     public CompilationDto updateCompilationPatch(Long compId, UpdateCompilationRequest request) {
         Compilation compilation = repository.findById(compId)
                 .orElseThrow(() -> new CompilationNotFoundException("Compilation not found"));

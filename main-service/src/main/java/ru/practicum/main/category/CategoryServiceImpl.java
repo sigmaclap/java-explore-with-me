@@ -19,18 +19,17 @@ import static ru.practicum.main.utils.Pagination.patternPageable;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository repository;
 
     @Override
-    @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
         log.info("Creating new category {}", categoryDto.getName());
         return CategoryMapper.toDtoCategory(repository.save(CategoryMapper.toCategory(categoryDto)));
     }
 
     @Override
-    @Transactional
     public void deleteCategory(Long catId) {
         log.info("Deleting category with id {}", catId);
         repository.delete(repository.findById(catId)
@@ -38,7 +37,6 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @Transactional
     public CategoryDto updateCategory(Long catId, CategoryDto categoryDto) {
         Category category = repository.findById(catId)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id"));

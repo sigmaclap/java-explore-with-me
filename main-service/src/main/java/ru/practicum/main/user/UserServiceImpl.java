@@ -18,6 +18,7 @@ import static ru.practicum.main.utils.Pagination.patternPageable;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
@@ -37,13 +38,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserDto createUser(UserDto userDto) {
         return UserMapper.toDtoUser(repository.save(UserMapper.toUser(userDto)));
     }
 
     @Override
-    @Transactional
     public void deleteUser(Long userId) {
         log.info("User deleting with id {}", userId);
         repository.delete(repository.findById(userId)

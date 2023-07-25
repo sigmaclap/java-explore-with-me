@@ -14,11 +14,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class HitServiceImpl implements HitService {
     private final HitRepository repository;
 
     @Override
-    @Transactional
     public void saveHit(EndpointHit endpointHit) {
         log.info("Saving hit " + endpointHit);
         repository.save(HitMapper.toHit(endpointHit));

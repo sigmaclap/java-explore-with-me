@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class RequestServiceImpl implements RequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
@@ -40,7 +41,6 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    @Transactional
     public ParticipationRequestDto createRequestByUserOnParticipation(Long userId, Long eventId) {
         Request request = new Request();
         User userRequester = validateExistsUser(userId);
@@ -52,7 +52,6 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    @Transactional
     public ParticipationRequestDto cancelRequestByUser(Long userId, Long requestId) {
         User userRequester = validateExistsUser(userId);
         Request request = validateExistsRequest(requestId);
