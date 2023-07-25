@@ -2,10 +2,7 @@ package ru.practicum.main.event.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.main.category.mapper.CategoryMapper;
-import ru.practicum.main.event.dto.EventFullDto;
-import ru.practicum.main.event.dto.EventResponseStatusUpdateResult;
-import ru.practicum.main.event.dto.EventShortDto;
-import ru.practicum.main.event.dto.NewEventDto;
+import ru.practicum.main.event.dto.*;
 import ru.practicum.main.event.entity.Event;
 import ru.practicum.main.request.dto.ParticipationRequestDto;
 import ru.practicum.main.states.RequestStatus;
@@ -34,20 +31,24 @@ public class EventMapper {
     public EventFullDto toFullDto(Event event) {
         return EventFullDto.builder()
                 .id(event.getId())
-                .annotation(event.getAnnotation())
                 .category(event.getCategory() != null ? CategoryMapper.toDtoCategory(event.getCategory()) : null)
                 .confirmedRequests(event.getConfirmedRequests())
-                .createdOn(event.getCreatedOn())
-                .description(event.getDescription())
-                .eventDate(event.getEventDate())
+                .eventDescriptions(EventDescriptionsDto.builder()
+                        .annotation(event.getAnnotation())
+                        .description(event.getDescription())
+                        .title(event.getTitle())
+                        .build())
+                .eventDates(EventDateTimeDto.builder()
+                        .createdOn(event.getCreatedOn())
+                        .eventDate(event.getEventDate())
+                        .publishedOn(event.getPublishedOn())
+                        .build())
                 .initiator(event.getInitiator() != null ? UserMapper.toShortDto(event.getInitiator()) : null)
                 .location(event.getLocation())
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
-                .publishedOn(event.getPublishedOn())
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState())
-                .title(event.getTitle())
                 .views(event.getViews())
                 .build();
     }
