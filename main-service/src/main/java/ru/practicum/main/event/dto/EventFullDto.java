@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.main.category.dto.CategoryDto;
+import ru.practicum.main.comment.dto.CommentDto;
 import ru.practicum.main.states.State;
 import ru.practicum.main.user.dto.UserShortDto;
 import ru.practicum.main.utils.Location;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -28,4 +31,5 @@ public class EventFullDto {
     Boolean requestModeration;
     State state;
     Long views;
+    List<CommentDto> comments;
 }
