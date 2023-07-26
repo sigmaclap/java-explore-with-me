@@ -7,9 +7,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.dto.dtos.EndpointHit;
 import ru.dto.dtos.ViewStats;
+import ru.dto.dtos.utils.Constants;
 import stat.service.exceptions.InvalidValidationException;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 public class HitController {
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private final HitService hitService;
 
@@ -28,8 +29,8 @@ public class HitController {
     }
 
     @GetMapping("/stats")
-    public List<ViewStats> getStats(@RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDateTime start,
-                                    @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDateTime end,
+    public List<ViewStats> getStats(@RequestParam @DateTimeFormat(pattern = Constants.DATE_FORMAT) @NotNull LocalDateTime start,
+                                    @RequestParam @DateTimeFormat(pattern = Constants.DATE_FORMAT) @NotNull LocalDateTime end,
                                     @RequestParam(required = false) List<String> uris,
                                     @RequestParam(defaultValue = "false") Boolean unique) {
         if (start.isAfter(end)) {
