@@ -3,12 +3,14 @@ package ru.practicum.main.event.entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.main.category.entity.Category;
+import ru.practicum.main.comment.entity.Comment;
 import ru.practicum.main.states.State;
 import ru.practicum.main.user.entity.User;
 import ru.practicum.main.utils.Location;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -55,6 +57,8 @@ public class Event {
     @Enumerated(EnumType.STRING)
     State state;
     Long views;
+    @Transient
+    List<Comment> comments;
 
 
     @Override

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.main.category.CategoryRepository;
 import ru.practicum.main.category.entity.Category;
+import ru.practicum.main.comment.CommentRepository;
+import ru.practicum.main.comment.entity.Comment;
 import ru.practicum.main.event.dto.*;
 import ru.practicum.main.event.entity.Event;
 import ru.practicum.main.event.mapper.EventMapper;
@@ -30,8 +32,11 @@ import stat.client.client.HitService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static ru.practicum.main.event.entity.QEvent.event;
@@ -47,6 +52,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
     private final HitService hitService;
     private final UpdaterDtoToEntity update;
 
@@ -78,6 +84,7 @@ public class EventServiceImpl implements EventService {
             result = repository.findAll(pagination);
         }
         updateViews(result.getContent());
+        updateCommentsWithList(result.getContent());
         return result.stream()
                 .map(EventMapper::toFullDto)
                 .collect(Collectors.toList());
@@ -90,6 +97,7 @@ public class EventServiceImpl implements EventService {
         validatePendingStatusForUpdate(event);
         update.fromDtoToEntity(request, event);
         updateViews(List.of(event));
+        updateComments(event);
         return EventMapper.toFullDto(repository.save(event));
     }
 
@@ -101,6 +109,7 @@ public class EventServiceImpl implements EventService {
         Pageable pagination = patternPageable(from, size);
         List<Event> events = repository.findAllByInitiator_Id(userId, pagination).getContent();
         updateViews(events);
+        updateCommentsWithList(events);
         return events.stream()
                 .map(EventMapper::toShortDto)
                 .collect(Collectors.toList());
@@ -124,6 +133,7 @@ public class EventServiceImpl implements EventService {
         validateExistsEvent(eventId);
         Event event = repository.findByIdAndInitiator_Id(eventId, userId);
         updateViews(List.of(event));
+        updateComments(event);
         return EventMapper.toFullDto(event);
     }
 
@@ -135,6 +145,7 @@ public class EventServiceImpl implements EventService {
         validateEventStatusForUpdate(event);
         update.fromDtoToEntity(request, event);
         updateViews(List.of(event));
+        updateComments(event);
         return EventMapper.toFullDto(repository.save(event));
     }
 
@@ -209,6 +220,7 @@ public class EventServiceImpl implements EventService {
             resultEvents = repository.findAll(paginationWithSort);
         }
         updateViews(resultEvents.getContent());
+        updateCommentsWithList(resultEvents.getContent());
         hitService.saveHit(request);
         return resultEvents.stream()
                 .map(EventMapper::toShortDto)
@@ -221,6 +233,7 @@ public class EventServiceImpl implements EventService {
         Event event = repository.findByIdAndState(eventId, State.PUBLISHED)
                 .orElseThrow(() -> new EventNotFoundException("Event with id was not found"));
         updateViews(List.of(event));
+        updateComments(event);
         hitService.saveHit(request);
         return EventMapper.toFullDto(event);
     }
@@ -230,6 +243,31 @@ public class EventServiceImpl implements EventService {
                 || event.getState().equals(State.REJECTED))) {
             log.error("Only pending or canceled events can be changed");
             throw new InvalidDataException("Only pending or canceled events can be changed");
+        }
+    }
+
+    private void updateComments(Event event) {
+        List<Comment> comments = commentRepository.findCommentsByEvent_Id(event.getId());
+        if (comments.isEmpty()) {
+            event.setComments(new ArrayList<>());
+        } else {
+            event.setComments(comments);
+        }
+    }
+
+    private void updateCommentsWithList(List<Event> events) {
+        List<Long> eventsIds = events.stream().map(Event::getId).collect(Collectors.toList());
+        Map<Long, Comment> comments = commentRepository.findAllByEvent_IdIn(eventsIds).stream()
+                .collect(Collectors.toMap(comment -> comment.getEvent().getId(), Function.identity()));
+        for (Event event : events) {
+            List<Comment> list = comments.values().stream()
+                    .filter(e -> e.getEvent().getId().equals(event.getId()))
+                    .collect(Collectors.toList());
+            if (list.isEmpty()) {
+                event.setComments(new ArrayList<>());
+            } else {
+                event.setComments(list);
+            }
         }
     }
 
