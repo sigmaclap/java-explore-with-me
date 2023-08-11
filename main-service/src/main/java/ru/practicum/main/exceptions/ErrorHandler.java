@@ -51,7 +51,8 @@ public class ErrorHandler {
             CategoryNotFoundException.class,
             CompilationNotFoundException.class,
             EventNotFoundException.class,
-            RequestNotFoundException.class})
+            RequestNotFoundException.class,
+            CommentNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final RuntimeException e) {
         log.error(e.getMessage(), Arrays.toString(e.getStackTrace()));
